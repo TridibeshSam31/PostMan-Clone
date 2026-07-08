@@ -152,17 +152,21 @@ async def run_request(payload: schemas.RunnerRequestIn, db: Session = Depends(ge
     params = _build_params(resolved_params)
     body_kwargs = _build_body(payload.body_type, resolved_body_content)
 
+    # Normalise resolved_url
+    if resolved_url:
+        resolved_url = resolved_url.strip()
+
     # SSRF scheme validation
-    if resolved_url and not (resolved_url.startswith("http://") or resolved_url.startswith("https://")):
+    if not resolved_url or not (resolved_url.startswith("http://") or resolved_url.startswith("https://")):
         result = schemas.RunnerResponseOut(
             status_code=None,
             response_time_ms=0,
             response_size_bytes=0,
             headers={},
             body=None,
-            error="Invalid URL scheme. Only HTTP and HTTPS are supported."
+            error="URL must start with http:// or https://"
         )
-        _save_history(db, payload, resolved_url, result)
+        _save_history(db, payload, resolved_url or "", result)
         return result
 
     start = time.monotonic()
@@ -193,6 +197,17 @@ async def run_request(payload: schemas.RunnerRequestIn, db: Session = Depends(ge
             headers=dict(response.headers),
             body=body_text,
             error=None,
+        )
+
+    except httpx.InvalidURL:
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+        result = schemas.RunnerResponseOut(
+            status_code=None,
+            response_time_ms=elapsed_ms,
+            response_size_bytes=0,
+            headers={},
+            body=None,
+            error="Invalid URL",
         )
 
     except httpx.TimeoutException:
