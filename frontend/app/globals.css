@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+/* ─── Light theme (default) ──────────────────────────────── */
+@theme {
+  --color-pm-bg:          #f3f3f3;
+  --color-pm-surface:     #ffffff;
+  --color-pm-sidebar:     #efefef;
+  --color-pm-navbar:      #ffffff;
+  --color-pm-border:      #dedede;
+  --color-pm-input:       #ffffff;
+  --color-pm-hover:       #e8e8e8;
+  --color-pm-active:      #e0e0e0;
+  --color-pm-text:        #212121;
+  --color-pm-muted:       #6b6b6b;
+  --color-pm-orange:      #ef5c33;
+  --color-pm-orange-dim:  #c8420d;
+
+  /* method badge colours (same in both themes) */
+  --color-method-get:     #49cc90;
+  --color-method-post:    #fca130;
+  --color-method-put:     #61affe;
+  --color-method-patch:   #9768d1;
+  --color-method-delete:  #f93e3e;
+  --color-method-head:    #9daab6;
+  --color-method-options: #9daab6;
+}
+
+/* ─── Dark theme overrides ───────────────────────────────── */
+/* Applied when <html class="dark"> is set by the theme toggle */
+html.dark {
+  --color-pm-bg:         #1e1e1e;
+  --color-pm-surface:    #242424;
+  --color-pm-sidebar:    #2c2c2c;
+  --color-pm-navbar:     #1a1a1a;
+  --color-pm-border:     #3a3a3a;
+  --color-pm-input:      #2d2d2d;
+  --color-pm-hover:      #373737;
+  --color-pm-active:     #3d3d3d;
+  --color-pm-text:       #e4e4e4;
+  --color-pm-muted:      #9b9b9b;
+  --color-pm-orange:     #ef5c33;
+  --color-pm-orange-dim: #c8420d;
+}
+
+/* ─── Resets & base ──────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* ─── Pointer cursor on all interactive elements ─────────── */
+button,
+a,
+select,
+[role="button"],
+[role="tab"],
+[role="option"],
+[role="menuitem"],
+label[for],
+input[type="checkbox"],
+input[type="radio"],
+input[type="file"] {
+  cursor: pointer;
+}
+
+button:disabled,
+button[disabled],
+input:disabled,
+select:disabled {
+  cursor: not-allowed;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: var(--color-pm-bg);
+  color: var(--color-pm-text);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+
+/* ─── Scrollbars — light theme ───────────────────────────── */
+::-webkit-scrollbar          { width: 6px; height: 6px; }
+::-webkit-scrollbar-track    { background: transparent; }
+::-webkit-scrollbar-thumb    { background: #c0c0c0; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #a0a0a0; }
+
+html.dark ::-webkit-scrollbar-thumb       { background: #4a4a4a; }
+html.dark ::-webkit-scrollbar-thumb:hover { background: #6a6a6a; }
+
+/* ─── Resizable panel separator ─────────────────────────── */
+[data-separator] {
+  background: var(--color-pm-border);
+  flex-shrink: 0;
+  transition: background 150ms;
+}
+[data-separator]:hover,
+[data-separator]:active {
+  background: #ef5c33;
+}
+[data-separator][data-orientation="horizontal"] {
+  width: 1px;
+  cursor: col-resize;
+}
+[data-separator][data-orientation="vertical"] {
+  height: 1px;
+  cursor: row-resize;
+}
