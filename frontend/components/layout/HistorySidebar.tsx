@@ -102,10 +102,9 @@ export default function HistorySidebar({ searchQuery = "" }: Props) {
   const openTab = useTabStore((s) => s.openTab);
   const { selectedWorkspaceId } = useAppStore();
 
-  const { data: history = [], isLoading } = useQuery({
+  const { data: history = [], isLoading, isError, error } = useQuery({
     queryKey: ["history", selectedWorkspaceId],
     queryFn: () => historyApi.list(selectedWorkspaceId),
-    enabled: !!selectedWorkspaceId,
     refetchInterval: 5000, // poll every 5s as a fallback
   });
 
@@ -193,6 +192,20 @@ export default function HistorySidebar({ searchQuery = "" }: Props) {
             </div>
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-3 px-6 text-center">
+        <Clock size={40} strokeWidth={1.2} className="text-method-delete" />
+        <div>
+          <p className="text-pm-text text-xs font-medium mb-1">Could not load history</p>
+          <p className="text-pm-muted text-xs leading-relaxed">
+            {error instanceof Error ? error.message : "Check the backend URL and CORS settings."}
+          </p>
+        </div>
       </div>
     );
   }

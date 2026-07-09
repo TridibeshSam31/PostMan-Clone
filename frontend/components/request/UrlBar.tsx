@@ -117,7 +117,7 @@ export default function UrlBar({ onSend, onSaveClick }: Props) {
         value={tab.url}
         onChange={(e) => handleUrlChange(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Enter request URL"
+        placeholder="https://jsonplaceholder.typicode.com/posts/1"
         spellCheck={false}
         className="flex-1 h-9 px-3 rounded bg-pm-input border border-pm-border
                    text-pm-text text-sm placeholder:text-pm-muted font-mono

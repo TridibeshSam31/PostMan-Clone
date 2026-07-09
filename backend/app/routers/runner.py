@@ -4,6 +4,7 @@ import re
 import time
 import uuid
 from datetime import datetime, timezone
+from urllib.parse import urlparse
 
 import httpx
 from fastapi import APIRouter, Depends
@@ -69,6 +70,24 @@ def _build_body(body_type: str, body_content: str | None):
     if body_type == "urlencoded":
         return {"data": {p["key"]: p["value"] for p in pairs if isinstance(p, dict) and p.get("enabled") and p.get("key")}}
     return {}
+
+
+def _friendly_connection_error(exc: httpx.ConnectError, url: str) -> str:
+    host = urlparse(url).hostname or "the host"
+    raw_error = str(exc)
+
+    if "Name or service not known" in raw_error or "No address associated with hostname" in raw_error:
+        if host == "typicode.com":
+            return (
+                "Could not resolve typicode.com. For JSONPlaceholder, use "
+                "https://jsonplaceholder.typicode.com/posts/1"
+            )
+        return f"Could not resolve {host}. Check the hostname or your internet/DNS connection."
+
+    if "Connection refused" in raw_error:
+        return f"Connection refused by {host}. Check that the server is running and reachable."
+
+    return f"Could not connect to {host}. {raw_error}"
 
 
 def _save_history(db: Session, payload: schemas.RunnerRequestIn, resolved_url: str, result: schemas.RunnerResponseOut):
@@ -219,6 +238,17 @@ async def run_request(payload: schemas.RunnerRequestIn, db: Session = Depends(ge
             headers={},
             body=None,
             error="Request timed out after 30s",
+        )
+
+    except httpx.ConnectError as exc:
+        elapsed_ms = int((time.monotonic() - start) * 1000)
+        result = schemas.RunnerResponseOut(
+            status_code=None,
+            response_time_ms=elapsed_ms,
+            response_size_bytes=0,
+            headers={},
+            body=None,
+            error=_friendly_connection_error(exc, resolved_url),
         )
 
     except Exception as exc:
