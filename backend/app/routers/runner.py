@@ -27,6 +27,18 @@ def resolve_text(text: str | None, variables: dict[str, str]) -> str | None:
     return re.sub(r"\{\{([^}]+)\}\}", replace, text)
 
 
+def _normalize_url(url: str | None) -> str:
+    if not url:
+        return ""
+
+    normalized = url.strip()
+    if normalized.startswith("https:/") and not normalized.startswith("https://"):
+        return "https://" + normalized[len("https:/"):].lstrip("/")
+    if normalized.startswith("http:/") and not normalized.startswith("http://"):
+        return "http://" + normalized[len("http:/"):].lstrip("/")
+    return normalized
+
+
 def _build_headers(pairs: list[schemas.KeyValuePair], auth_type: str, auth_config: dict) -> dict:
     headers: dict[str, str] = {
         kv.key: kv.value for kv in pairs if kv.enabled and kv.key
@@ -171,9 +183,7 @@ async def run_request(payload: schemas.RunnerRequestIn, db: Session = Depends(ge
     params = _build_params(resolved_params)
     body_kwargs = _build_body(payload.body_type, resolved_body_content)
 
-    # Normalise resolved_url
-    if resolved_url:
-        resolved_url = resolved_url.strip()
+    resolved_url = _normalize_url(resolved_url)
 
     # SSRF scheme validation
     if not resolved_url or not (resolved_url.startswith("http://") or resolved_url.startswith("https://")):
