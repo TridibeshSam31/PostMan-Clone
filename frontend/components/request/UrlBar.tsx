@@ -69,6 +69,7 @@ export default function UrlBar({ onSend, onSaveClick }: Props) {
     updateTab(activeTabId, {
       url: raw,
       params: newParams.length > 0 ? newParams : tab!.params,
+      response: null,
       isDirty: true,
     });
   }
@@ -82,6 +83,7 @@ export default function UrlBar({ onSend, onSaveClick }: Props) {
       updateTab(activeTabId, {
         url: normalized,
         params: newParams.length > 0 ? newParams : tab.params,
+        response: null,
         isDirty: true,
       });
     }
