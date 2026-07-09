@@ -8,6 +8,17 @@ import { useTabStore } from "@/store/tabStore";
 import { useAppStore } from "@/store/appStore";
 import { sendRequest } from "@/lib/api";
 
+function normalizeUrl(url: string): string {
+  const trimmed = url.trim();
+  if (trimmed.startsWith("https:/") && !trimmed.startsWith("https://")) {
+    return `https://${trimmed.slice("https:/".length).replace(/^\/+/, "")}`;
+  }
+  if (trimmed.startsWith("http:/") && !trimmed.startsWith("http://")) {
+    return `http://${trimmed.slice("http:/".length).replace(/^\/+/, "")}`;
+  }
+  return trimmed;
+}
+
 export function useSendRequest() {
   const activeTabId = useTabStore((s) => s.activeTabId);
   const tab = useTabStore((s) => s.tabs.find((t) => t.id === s.activeTabId));
@@ -19,14 +30,16 @@ export function useSendRequest() {
     if (!tab || !activeTabId) return;
     if (tab.isLoading) return;
 
+    const normalizedUrl = normalizeUrl(tab.url);
+
     // 1. Set loading state
-    updateTab(activeTabId, { isLoading: true, response: null });
+    updateTab(activeTabId, { url: normalizedUrl, isLoading: true, response: null });
 
     try {
       // 2. Call the runner proxy with unresolved fields
       const result = await sendRequest({
         method: tab.method,
-        url: tab.url,
+        url: normalizedUrl,
         headers: tab.headers,
         params: tab.params,
         body_type: tab.bodyType,
