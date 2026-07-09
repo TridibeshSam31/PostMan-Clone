@@ -7,17 +7,7 @@ import { toast } from "sonner";
 import { useTabStore } from "@/store/tabStore";
 import { useAppStore } from "@/store/appStore";
 import { sendRequest } from "@/lib/api";
-
-function normalizeUrl(url: string): string {
-  const trimmed = url.trim();
-  if (trimmed.startsWith("https:/") && !trimmed.startsWith("https://")) {
-    return `https://${trimmed.slice("https:/".length).replace(/^\/+/, "")}`;
-  }
-  if (trimmed.startsWith("http:/") && !trimmed.startsWith("http://")) {
-    return `http://${trimmed.slice("http:/".length).replace(/^\/+/, "")}`;
-  }
-  return trimmed;
-}
+import { normalizeRequestUrl } from "@/lib/url";
 
 export function useSendRequest() {
   const activeTabId = useTabStore((s) => s.activeTabId);
@@ -30,7 +20,7 @@ export function useSendRequest() {
     if (!tab || !activeTabId) return;
     if (tab.isLoading) return;
 
-    const normalizedUrl = normalizeUrl(tab.url);
+    const normalizedUrl = normalizeRequestUrl(tab.url);
 
     // 1. Set loading state
     updateTab(activeTabId, { url: normalizedUrl, isLoading: true, response: null });

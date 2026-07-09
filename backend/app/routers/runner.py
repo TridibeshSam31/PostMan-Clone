@@ -31,11 +31,25 @@ def _normalize_url(url: str | None) -> str:
     if not url:
         return ""
 
-    normalized = url.strip()
-    if normalized.startswith("https:/") and not normalized.startswith("https://"):
-        return "https://" + normalized[len("https:/"):].lstrip("/")
-    if normalized.startswith("http:/") and not normalized.startswith("http://"):
-        return "http://" + normalized[len("http:/"):].lstrip("/")
+    normalized = re.sub(r"[\u200B-\u200D\uFEFF]", "", url).strip()
+    if re.match(r"^https?://", normalized, flags=re.IGNORECASE):
+        return normalized
+
+    single_slash = re.match(r"^(https?):/+(.+)$", normalized, flags=re.IGNORECASE)
+    if single_slash:
+        return f"{single_slash.group(1).lower()}://{single_slash.group(2).lstrip('/')}"
+
+    missing_slash = re.match(r"^(https?):(.+)$", normalized, flags=re.IGNORECASE)
+    if missing_slash:
+        return f"{missing_slash.group(1).lower()}://{missing_slash.group(2).lstrip('/')}"
+
+    missing_colon = re.match(r"^(https?)//(.+)$", normalized, flags=re.IGNORECASE)
+    if missing_colon:
+        return f"{missing_colon.group(1).lower()}://{missing_colon.group(2).lstrip('/')}"
+
+    if re.match(r"^[^\s/]+\.[^\s]+", normalized):
+        return f"https://{normalized}"
+
     return normalized
 
 

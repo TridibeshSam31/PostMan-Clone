@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { ChevronDown, Loader2, Save as SaveIcon } from "lucide-react";
 import { useTabStore } from "@/store/tabStore";
+import { normalizeRequestUrl } from "@/lib/url";
 import { cn, METHOD_COLORS } from "@/lib/utils";
 import type { HttpMethod, KeyValuePair } from "@/types";
 
@@ -72,8 +73,26 @@ export default function UrlBar({ onSend, onSaveClick }: Props) {
     });
   }
 
+  function normalizeCurrentUrl(): string {
+    if (!tab || !activeTabId) return "";
+
+    const normalized = normalizeRequestUrl(tab.url);
+    if (normalized !== tab.url) {
+      const newParams = parseQueryParams(normalized);
+      updateTab(activeTabId, {
+        url: normalized,
+        params: newParams.length > 0 ? newParams : tab.params,
+        isDirty: true,
+      });
+    }
+    return normalized;
+  }
+
   function handleKeyDown(e: React.KeyboardEvent) {
-    if (e.key === "Enter") onSend();
+    if (e.key === "Enter") {
+      normalizeCurrentUrl();
+      onSend();
+    }
   }
 
   return (
@@ -116,6 +135,7 @@ export default function UrlBar({ onSend, onSaveClick }: Props) {
         type="text"
         value={tab.url}
         onChange={(e) => handleUrlChange(e.target.value)}
+        onBlur={normalizeCurrentUrl}
         onKeyDown={handleKeyDown}
         placeholder="https://jsonplaceholder.typicode.com/posts/1"
         spellCheck={false}
